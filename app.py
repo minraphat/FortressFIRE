@@ -106,7 +106,7 @@ for i, (def_sym, def_qty, def_cost) in enumerate(default_assets):
         cost = cols[2].number_input(f"Cost {i+1}", value=float(def_cost), min_value=0.0, step=0.01, key=f"cost_{i}")
     with cols[3]:
         if sym:
-            market_type = "🇹🇭 ไทย (THB)" if ".BK" in sym else "🇺🇸 อเมริกา (USD)"
+            market_type = "🇹🇭 ไทย (THB)" if ".BK" in sym else "US อเมริกา (USD)"
             cols[3].markdown(f"<br><span style='color:#64748b; font-size: 14px;'>{market_type}</span>", unsafe_allow_html=True)
             input_assets.append({"symbol": sym, "qty": qty, "cost": cost, "is_th": ".BK" in sym})
         else:
