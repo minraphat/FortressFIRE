@@ -12,31 +12,26 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom High-End FinTech UI Layout using CSS
+# Premium SaaS Layout CSS
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
-    /* Global Background & Font Reset */
     html, body, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {
         font-family: 'Inter', sans-serif;
         background-color: #f8fafc !important;
     }
     
-    /* Header & Caption Formatting */
     h1 { color: #0f172a; font-weight: 700; letter-spacing: -0.03em; font-size: 28px; margin-bottom: 2px; }
     h2, h3 { color: #1e293b; font-weight: 600; letter-spacing: -0.01em; }
     
-    /* Premium SaaS Cards Control */
     div[data-testid="stMetric"] {
         background-color: #ffffff !important;
         padding: 24px !important;
         border-radius: 16px !important;
         box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.02), 0 2px 4px -2px rgba(15, 23, 42, 0.02), 0 0 0 1px rgba(15, 23, 42, 0.04) !important;
-        border: none !important;
     }
     
-    /* Custom FinTech Multi-Asset Box Wrapper */
     .portfolio-container {
         background-color: #ffffff;
         padding: 24px;
@@ -45,14 +40,8 @@ st.markdown("""
         margin-bottom: 24px;
     }
     
-    /* Clean DataFrame Styling overrides */
     .stDataFrame div { border-radius: 12px; }
-    
-    /* Minimalist Progress Bar Adjustment */
     .stProgress > div > div > div > div { background-color: #10b981; }
-    
-    /* Sidebar Styling Adjustment */
-    div[data-testid="stSidebarUserContent"] { padding-top: 2rem; }
     hr { border-top: 1px solid #e2e8f0 !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -97,13 +86,10 @@ st.sidebar.subheader("📊 Market Assumptions")
 expected_annual_return = st.sidebar.slider("คาดการณ์ผลตอบแทนพอร์ตต่อปี (%)", 1, 15, 8, step=1) / 100
 inflation_rate = st.sidebar.slider("อัตราเงินเฟ้อเฉลี่ยต่อปี (%)", 1, 8, 3, step=1) / 100
 
-# --- 4. MAIN CONTENT: ASSET MANAGEMENT CARD ---
-st.markdown("<div class='portfolio-container'>", unsafe_allow_html=True)
-st.subheader("Your Holdings")
-st.caption("ระบุรายชื่อหุ้นหรือ ETF เพื่อแทร็กข้อมูล (รองรับความละเอียดสูงพิเศษ 9 ตำแหน่ง ทั้งจำนวนหุ้นและต้นทุนเฉลี่ย)")
-
-# รายการสินทรัพย์เริ่มต้น
-default_assets = [
+# --- 4. 🔑 SESSION STATE INITIALIZATION (กลไกจำค่าอินพุต) ---
+# กำหนดค่าเริ่มต้นให้กับกล่องรับข้อมูลระบบ (ทำครั้งเดียวตอนเปิดหน้าเว็บครั้งแรก)
+num_assets = 6
+default_values = [
     ("VOO", 15.452381924, 420.551283941),   
     ("SCHD", 55.129402811, 75.238491024),
     ("PTT.BK", 1500.0, 34.0),
@@ -112,6 +98,20 @@ default_assets = [
     ("", 0.0, 0.0)
 ]
 
+for i in range(num_assets):
+    def_sym, def_qty, def_cost = default_values[i]
+    if f"sym_{i}" not in st.session_state:
+        st.session_state[f"sym_{i}"] = def_sym
+    if f"qty_{i}" not in st.session_state:
+        st.session_state[f"qty_{i}"] = float(def_qty)
+    if f"cost_{i}" not in st.session_state:
+        st.session_state[f"cost_{i}"] = float(def_cost)
+
+# --- 5. MAIN CONTENT: ASSET MANAGEMENT CARD ---
+st.markdown("<div class='portfolio-container'>", unsafe_allow_html=True)
+st.subheader("Your Holdings")
+st.caption("ระบุรายชื่อหุ้นหรือ ETF เพื่อแทร็กข้อมูล (ระบบจะล็อกและบันทึกค่าสิ่งที่คุณกรอกไว้ในความทรงจำอัตโนมัติ)")
+
 input_assets = []
 cols_header = st.columns([2, 3, 3, 2])
 cols_header[0].markdown("<small style='color: #64748b; font-weight:600;'>SYMBOL</small>", unsafe_allow_html=True)
@@ -119,14 +119,15 @@ cols_header[1].markdown("<small style='color: #64748b; font-weight:600;'>VALUE (
 cols_header[2].markdown("<small style='color: #64748b; font-weight:600;'>AVG COST</small>", unsafe_allow_html=True)
 cols_header[3].markdown("<small style='color: #64748b; font-weight:600;'>MARKET</small>", unsafe_allow_html=True)
 
-for i, (def_sym, def_qty, def_cost) in enumerate(default_assets):
+for i in range(num_assets):
     cols = st.columns([2, 3, 3, 2])
     with cols[0]:
-        sym = cols[0].text_input(f"Asset {i+1}", value=def_sym, key=f"sym_{i}", label_visibility="collapsed").upper().strip()
+        # ใช้พารามิเตอร์ key เพื่อผูกมัดค่าไว้กับ st.session_state โดยตรง
+        sym = cols[0].text_input(f"Asset {i+1}", key=f"sym_{i}", label_visibility="collapsed").upper().strip()
     with cols[1]:
-        qty = cols[1].number_input(f"Qty {i+1}", value=float(def_qty), min_value=0.0, step=0.000000001, format="%.9f", key=f"qty_{i}", label_visibility="collapsed")
+        qty = cols[1].number_input(f"Qty {i+1}", min_value=0.0, step=0.000000001, format="%.9f", key=f"qty_{i}", label_visibility="collapsed")
     with cols[2]:
-        cost = cols[2].number_input(f"Cost {i+1}", value=float(def_cost), min_value=0.0, step=0.000000001, format="%.9f", key=f"cost_{i}", label_visibility="collapsed")
+        cost = cols[2].number_input(f"Cost {i+1}", min_value=0.0, step=0.000000001, format="%.9f", key=f"cost_{i}", label_visibility="collapsed")
     with cols[3]:
         if sym:
             market_type = "🇹🇭 THB" if ".BK" in sym else "🇺🇸 USD"
@@ -136,7 +137,7 @@ for i, (def_sym, def_qty, def_cost) in enumerate(default_assets):
             cols[3].write("")
 st.markdown("</div>", unsafe_allow_html=True)
 
-# --- 5. CALCULATION LOGIC ---
+# --- 6. CALCULATION LOGIC ---
 portfolio_details = []
 total_stock_value_thb = 0.0
 total_cost_thb = 0.0
@@ -185,7 +186,7 @@ if input_assets:
 net_worth = float(total_stock_value_thb + cash_thb)
 fire_target = float((desired_monthly_spend * 12) / safe_withdrawal_rate)
 
-# --- 6. UI DISPLAY: FINANCIAL METRICS (SaaS Dashboard Cards) ---
+# --- 7. UI DISPLAY: FINANCIAL METRICS ---
 st.subheader("Financial Overview")
 
 m1, m2, m3, m4 = st.columns(4)
@@ -197,18 +198,18 @@ total_pl_pct = (total_pl / total_cost_thb) * 100 if total_cost_thb > 0 else 0
 m3.metric("ALL TIME P&L", f"฿{total_pl:,.0f}", f"{total_pl_pct:+.2f}%")
 m4.metric("FX RATE (USD/THB)", f"{usd_thb:.2f}")
 
-# Progress bar container style
+# Progress bar
 st.markdown("<br>", unsafe_allow_html=True)
 progress = min(net_worth / fire_target, 1.0)
 st.markdown(f"<div style='font-size: 14px; font-weight:600; color:#334155; margin-bottom:6px;'>🛡️ Progress to Freedom: {progress*100:.2f}%</div>", unsafe_allow_html=True)
 st.progress(progress)
 
-# ตารางสรุปพอร์ตโฟลิโอแบบพรีเมียม
+# ตารางผลลัพธ์พอร์ต
 if portfolio_details:
     st.markdown("<br>", unsafe_allow_html=True)
     st.dataframe(pd.DataFrame(portfolio_details), use_container_width=True, hide_index=True)
 
-# --- 7. FUTURE PROJECTION (SIMULATION CARD) ---
+# --- 8. FUTURE PROJECTION (SIMULATION) ---
 st.markdown("<br><hr>", unsafe_allow_html=True)
 st.subheader("Growth Projection")
 st.caption("การเติบโตแบบจำลองพอร์ตโฟลิโอสะสมระยะยาว (หลังหักอัตราเงินเฟ้อแล้ว)")
@@ -233,7 +234,7 @@ for year in range(0, 41):
 
 df_history = pd.DataFrame(history)
 
-# กราฟสไตล์ FinTech ใช้สีเทาเข้ม สลับกับเส้นเป้าหมายสีเขียวอมฟ้า
+# กราฟสไตล์ FinTech
 fig = go.Figure()
 fig.add_trace(go.Scatter(
     x=df_history['Year'], 
