@@ -20,7 +20,7 @@ st.markdown("""
     h1 { color: #1e293b; font-weight: 700; }
     h2, h3 { color: #334155; }
     </style>
-    """, unsafe_scale=True)
+    """, unsafe_allow_html=True)
 
 st.title("🏰 FortressFIRE: Wealth & Protection Dashboard")
 st.caption(f"ระบบจำลองแผนเกษียณและอัปเดตพอร์ตเรียลไทม์ • อัปเดตล่าสุด: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
