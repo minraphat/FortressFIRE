@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom Elegant Minimalist UI using CSS
+# Custom Elegant Minimalist UI using CSS (Fixed Parameter Syntax)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
@@ -68,5 +68,11 @@ st.sidebar.subheader("📈 แผนออมรายเดือน")
 monthly_invest = st.sidebar.slider("เงินออมลงทุนเพิ่มต่อเดือน (บาท)", 0, 150000, 30000, step=1000)
 
 st.sidebar.subheader("🎯 เป้าหมายชีวิต (FIRE)")
-desired_monthly_spend = st.sidebar.number_input("ค่าใช้จ่ายหลังเกษียณ (บาท/เดือน)", value=50000, step
-                                                
+desired_monthly_spend = st.sidebar.number_input("ค่าใช้จ่ายหลังเกษียณ (บาท/เดือน)", value=50000, step=5000)
+safe_withdrawal_rate = st.sidebar.slider("Safe Withdrawal Rate (%)", 3.0, 5.0, 4.0, step=0.1) / 100
+
+st.sidebar.subheader("📊 สมมติฐานตลาด")
+expected_annual_return = st.sidebar.slider("คาดการณ์ผลตอบแทนพอร์ตต่อปี (%)", 1, 15, 8, step=1) / 100
+inflation_rate = st.sidebar.slider("อัตราเงินเฟ้อเฉลี่ยต่อปี (%)", 1, 8, 3, step=1) / 100
+
+# --- 4. MAIN CONTENT: ASSET
